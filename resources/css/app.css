@@ -1,0 +1,93 @@
+@import 'tailwindcss';
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+@source '../views/**/*.blade.php';
+@source '../js/**/*.js';
+
+@theme {
+    --font-serif: 'Cormorant Garamond', 'Playfair Display', 'Noto Serif TC', Georgia, serif;
+    --font-sans: 'Plus Jakarta Sans', 'Inter', 'Noto Sans TC', system-ui, -apple-system, sans-serif;
+
+    /* Luxury Beige & Soft Rose Palette */
+    --color-cream-50: #FCFAF7;
+    --color-cream-100: #FAF6F0;
+    --color-cream-200: #F3ECE1;
+    --color-cream-300: #E8DCCF;
+    --color-cream-400: #D8C5B3;
+    
+    --color-rose-50: #FDF8F6;
+    --color-rose-100: #F8EDE8;
+    --color-rose-200: #F2DDD5;
+    --color-rose-300: #E6C5BA;
+    --color-rose-400: #D4A396;
+    --color-rose-500: #C28274;
+
+    --color-gold-300: #E2CEB5;
+    --color-gold-400: #C8AA82;
+    --color-gold-500: #B38F60;
+    --color-gold-600: #937145;
+
+    --color-terracotta-400: #C47A62;
+    --color-terracotta-500: #AD5F47;
+
+    --color-espresso-800: #3A322E;
+    --color-espresso-900: #231E1B;
+    --color-espresso-950: #181412;
+}
+
+/* Custom Luxury Polish & Smooth Transitions */
+html {
+    scroll-behavior: smooth;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+}
+
+body {
+    background-color: var(--color-cream-50);
+    color: var(--color-espresso-900);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+}
+
+.font-serif-luxury {
+    font-family: var(--font-serif);
+}
+
+.glass-nav {
+    background: rgba(250, 246, 240, 0.85);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+}
+
+.glass-card {
+    background: rgba(255, 255, 255, 0.75);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(232, 220, 207, 0.6);
+}
+
+.glass-dark {
+    background: rgba(24, 20, 18, 0.7);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+/* Elegant scrollbar */
+::-webkit-scrollbar {
+    width: 6px;
+}
+::-webkit-scrollbar-track {
+    background: #FAF6F0;
+}
+::-webkit-scrollbar-thumb {
+    background: #D8C5B3;
+    border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: #B38F60;
+}
+
+[x-cloak] {
+    display: none !important;
+}
