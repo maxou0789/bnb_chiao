@@ -33,6 +33,7 @@
             this.activeIndex = index;
         },
         startDrag(e) {
+            if (e.target.closest('button') || e.target.closest('a')) return;
             this.isDragging = true;
             this.hasDragged = false;
             this.dragStartX = e.clientX ?? (e.touches && e.touches[0] ? e.touches[0].clientX : 0);
@@ -50,47 +51,59 @@
         endDrag() {
             if (!this.isDragging) return;
             this.isDragging = false;
-            const threshold = 45;
+            const threshold = 40;
             if (this.dragOffset < -threshold) {
                 this.next();
             } else if (this.dragOffset > threshold) {
                 this.prev();
             }
             this.dragOffset = 0;
-            setTimeout(() => { this.hasDragged = false; }, 60);
+            setTimeout(() => { this.hasDragged = false; }, 80);
+        },
+        getCardOffset(index) {
+            const count = this.filteredStays.length;
+            if (count === 0) return 0;
+            const cardWidth = window.innerWidth < 640 ? 240 : (window.innerWidth < 768 ? 280 : 320);
+            const progress = this.isDragging ? (this.activeIndex - (this.dragOffset / cardWidth)) : this.activeIndex;
+            let dist = index - progress;
+            while (dist > count / 2) dist -= count;
+            while (dist < -count / 2) dist += count;
+            return dist;
         },
         getCardTransform(index) {
             const count = this.filteredStays.length;
             if (count === 0) return '';
-            let diff = index - this.activeIndex;
-            while (diff > count / 2) diff -= count;
-            while (diff < -count / 2) diff += count;
+            
+            const dist = this.getCardOffset(index);
+            const absDist = Math.abs(dist);
 
-            if (Math.abs(diff) > 2) {
-                return 'transform: translateX(' + (diff > 0 ? '160%' : '-160%') + ') scale(0.6); opacity: 0; pointer-events: none; z-index: 0;';
+            if (absDist > 2.3) {
+                return 'transform: translateX(' + (dist > 0 ? '190%' : '-190%') + ') scale(0.6); opacity: 0; pointer-events: none; z-index: 0;';
             }
 
-            const liveShift = this.isDragging ? (this.dragOffset / 320) * 74 : 0;
-            const translateX = (diff * 74) + liveShift;
-            const scale = diff === 0 ? 1.05 : (Math.abs(diff) === 1 ? 0.88 : 0.72);
-            const opacity = diff === 0 ? 1 : (Math.abs(diff) === 1 ? 0.75 : 0.35);
-            const zIndex = 30 - Math.abs(diff) * 10;
-            const filter = diff === 0 ? 'none' : 'brightness(0.75) contrast(0.95)';
-            const transition = this.isDragging ? 'transition: transform 0.05s ease-out;' : 'transition: all 0.5s cubic-bezier(0.25, 1, 0.5, 1);';
+            const translateX = dist * 74;
+            let scale = 1.05 - (absDist * 0.17);
+            if (scale < 0.65) scale = 0.65;
 
-            return 'transform: translateX(' + translateX + '%) scale(' + scale + '); opacity: ' + opacity + '; z-index: ' + zIndex + '; filter: ' + filter + '; ' + transition;
-        },
-        getRelativeDiff(index) {
-            const count = this.filteredStays.length;
-            if (count === 0) return 0;
-            let diff = index - this.activeIndex;
-            while (diff > count / 2) diff -= count;
-            while (diff < -count / 2) diff += count;
-            return diff;
+            let opacity = 1.0;
+            if (absDist <= 1) {
+                opacity = 1.0 - (absDist * 0.25);
+            } else {
+                opacity = 0.75 - ((absDist - 1) * 0.4);
+            }
+            if (opacity < 0) opacity = 0;
+
+            const zIndex = Math.round(30 - (absDist * 10));
+            const brightness = Math.max(0.65, 1 - (absDist * 0.25));
+            const filter = absDist < 0.1 ? 'none' : 'brightness(' + brightness.toFixed(2) + ') contrast(0.95)';
+            const transition = this.isDragging ? 'transition: none;' : 'transition: all 0.5s cubic-bezier(0.25, 1, 0.5, 1);';
+
+            return 'transform: translateX(' + translateX.toFixed(1) + '%) scale(' + scale.toFixed(3) + '); opacity: ' + opacity.toFixed(2) + '; z-index: ' + zIndex + '; filter: ' + filter + '; ' + transition;
         },
         handleCardClick(stay, index) {
             if (this.hasDragged) return;
-            if (this.getRelativeDiff(index) === 0) {
+            const dist = this.getCardOffset(index);
+            if (Math.abs(dist) < 0.3) {
                 this.selectedStay = stay;
             } else {
                 this.goTo(index);
@@ -99,8 +112,8 @@
     }"
     @keydown.arrow-left.window="prev()"
     @keydown.arrow-right.window="next()"
-    @pointerup.window="endDrag()"
-    @pointercancel.window="endDrag()"
+    @pointerup.window="isDragging && endDrag()"
+    @pointercancel.window="isDragging && endDrag()"
     x-init="$watch('activeCategory', () => activeIndex = 0)"
 >
     <!-- Section Header (Matching Mockup) -->
@@ -120,12 +133,14 @@
         @pointerdown="startDrag($event)"
         @pointermove="onDrag($event)"
         @pointerup="endDrag()"
+        @pointerleave="isDragging && endDrag()"
     >
         
         <!-- Navigation Arrow Left -->
         <button 
+            @pointerdown.stop
             @click.stop="prev()"
-            class="absolute left-2 sm:left-12 lg:left-24 z-40 w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-white/90 hover:bg-white text-[#231E1B] shadow-xl border border-[#E8DCCF]/80 flex items-center justify-center hover:scale-105 active:scale-95 transition-all duration-300 cursor-pointer"
+            class="absolute left-2 sm:left-6 lg:left-12 z-40 w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-white/95 hover:bg-white text-[#231E1B] shadow-2xl border border-[#E8DCCF] flex items-center justify-center hover:scale-105 active:scale-95 transition-all duration-300 cursor-pointer backdrop-blur-md"
             aria-label="Previous Stay"
         >
             <svg class="w-5 h-5 text-[#231E1B]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -135,8 +150,9 @@
 
         <!-- Navigation Arrow Right -->
         <button 
+            @pointerdown.stop
             @click.stop="next()"
-            class="absolute right-2 sm:right-12 lg:right-24 z-40 w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-white/90 hover:bg-white text-[#231E1B] shadow-xl border border-[#E8DCCF]/80 flex items-center justify-center hover:scale-105 active:scale-95 transition-all duration-300 cursor-pointer"
+            class="absolute right-2 sm:right-6 lg:right-12 z-40 w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-white/95 hover:bg-white text-[#231E1B] shadow-2xl border border-[#E8DCCF] flex items-center justify-center hover:scale-105 active:scale-95 transition-all duration-300 cursor-pointer backdrop-blur-md"
             aria-label="Next Stay"
         >
             <svg class="w-5 h-5 text-[#231E1B]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -148,7 +164,7 @@
         <div class="relative w-full h-full flex items-center justify-center pointer-events-none">
             <template x-for="(stay, index) in filteredStays" :key="stay.id">
                 <div 
-                    class="absolute w-[240px] sm:w-[280px] md:w-[320px] aspect-[9/16] rounded-3xl overflow-hidden shadow-2xl transition-all duration-500 ease-out group bg-[#181412] border border-white/15 pointer-events-auto select-none"
+                    class="absolute w-[240px] sm:w-[280px] md:w-[320px] aspect-[9/16] rounded-3xl overflow-hidden shadow-2xl group bg-[#181412] border border-white/15 pointer-events-auto select-none will-change-transform"
                     :style="getCardTransform(index)"
                     @click="handleCardClick(stay, index)"
                 >
@@ -187,8 +203,8 @@
 
                         <!-- Read Review Trigger Hint (on Center Active Card) -->
                         <div 
-                            class="mt-3 pt-3 border-t border-white/15 flex items-center justify-between text-[11px] text-[#FAF6F0]/90 font-medium"
-                            x-show="getRelativeDiff(index) === 0"
+                            class="mt-3 pt-3 border-t border-white/15 flex items-center justify-between text-[11px] text-[#FAF6F0]/90 font-medium transition-opacity duration-300"
+                            :class="Math.abs(getCardOffset(index)) < 0.3 ? 'opacity-100' : 'opacity-0'"
                         >
                             <span>Explore Details</span>
                             <span class="text-xs">➔</span>
