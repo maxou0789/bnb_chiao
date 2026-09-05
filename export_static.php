@@ -483,7 +483,7 @@ $html = '<!DOCTYPE html>
             dragOffset: 0,
             hasDragged: false,
             activeCategory: "all",
-            stays: \' . $staysJson . \',
+            stays: ' . $staysJson . ',
             categories: {
                 "all": "ALL WORK",
                 "villa": "BOUTIQUE VILLAS",
