@@ -470,165 +470,190 @@ $html = '<!DOCTYPE html>
     </section>
 
 
-    <!-- PORTFOLIO SECTION (Interactive Alpine.js Catalog) -->
+    <!-- PORTFOLIO SECTION (3D Coverflow Carousel Matching Mockup) -->
     <div 
         id="portfolio" 
-        class="py-20 lg:py-28 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full"
+        class="py-20 lg:py-28 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full select-none overflow-hidden"
         x-data=\'{
-            activeCategory: "all",
-            search: "",
+            activeIndex: 0,
             selectedStay: null,
+            touchStartX: 0,
+            touchEndX: 0,
+            activeCategory: "all",
             stays: \' . $staysJson . \',
             categories: {
-                "all": "All Curations",
-                "villa": "Boutique Villas",
-                "resort": "Luxury Resorts",
-                "ocean": "Ocean & Nature"
+                "all": "ALL WORK",
+                "villa": "BOUTIQUE VILLAS",
+                "resort": "LUXURY RESORTS",
+                "ocean": "OCEAN & NATURE"
             },
             get filteredStays() {
-                return this.stays.filter(stay => {
-                    const matchCategory = (this.activeCategory === "all") || (stay.category === this.activeCategory);
-                    const query = this.search.toLowerCase().trim();
-                    if (!query) return matchCategory;
-                    const matchSearch = stay.title.toLowerCase().includes(query) || 
-                                        stay.location.toLowerCase().includes(query) || 
-                                        stay.description.toLowerCase().includes(query);
-                    return matchCategory && matchSearch;
-                });
+                if (this.activeCategory === "all") return this.stays;
+                return this.stays.filter(s => s.category === this.activeCategory);
+            },
+            next() {
+                if (this.filteredStays.length === 0) return;
+                this.activeIndex = (this.activeIndex + 1) % this.filteredStays.length;
+            },
+            prev() {
+                if (this.filteredStays.length === 0) return;
+                this.activeIndex = (this.activeIndex - 1 + this.filteredStays.length) % this.filteredStays.length;
+            },
+            goTo(index) {
+                this.activeIndex = index;
+            },
+            getCardTransform(index) {
+                const count = this.filteredStays.length;
+                if (count === 0) return "";
+                let diff = index - this.activeIndex;
+                while (diff > count / 2) diff -= count;
+                while (diff < -count / 2) diff += count;
+
+                if (Math.abs(diff) > 2) {
+                    return "transform: translateX(" + (diff > 0 ? "160%" : "-160%") + ") scale(0.6); opacity: 0; pointer-events: none; z-index: 0;";
+                }
+
+                const translateX = diff * 74;
+                const scale = diff === 0 ? 1.05 : (Math.abs(diff) === 1 ? 0.88 : 0.72);
+                const opacity = diff === 0 ? 1 : (Math.abs(diff) === 1 ? 0.75 : 0.35);
+                const zIndex = 30 - Math.abs(diff) * 10;
+                const filter = diff === 0 ? "none" : "brightness(0.75) contrast(0.95)";
+
+                return "transform: translateX(" + translateX + "%) scale(" + scale + "); opacity: " + opacity + "; z-index: " + zIndex + "; filter: " + filter + ";";
+            },
+            getRelativeDiff(index) {
+                const count = this.filteredStays.length;
+                if (count === 0) return 0;
+                let diff = index - this.activeIndex;
+                while (diff > count / 2) diff -= count;
+                while (diff < -count / 2) diff += count;
+                return diff;
+            },
+            handleTouchStart(e) {
+                this.touchStartX = e.changedTouches[0].screenX;
+            },
+            handleTouchEnd(e) {
+                this.touchEndX = e.changedTouches[0].screenX;
+                if (this.touchStartX - this.touchEndX > 40) this.next();
+                if (this.touchEndX - this.touchStartX > 40) this.prev();
             }
         }\'
+        @keydown.arrow-left.window="prev()"
+        @keydown.arrow-right.window="next()"
+        x-init="$watch(\'activeCategory\', () => activeIndex = 0)"
     >
-        <!-- Section Header -->
-        <div class="text-center max-w-3xl mx-auto mb-14">
-            <span class="text-xs uppercase tracking-[0.25em] font-semibold text-[#B38F60] bg-[#F8EDE8] px-4 py-1.5 rounded-full border border-[#E6C5BA]/50 inline-block mb-4">
-                Curated Stays &amp; Destinations
+        <!-- Section Header (Matching Mockup) -->
+        <div class="max-w-4xl mx-auto mb-10 sm:mb-14 text-center md:text-left">
+            <span class="text-xs uppercase tracking-[0.25em] font-semibold text-[#8C7A6B] block mb-2">
+                PORTFOLIO
             </span>
-            <h2 class="text-3xl sm:text-4xl lg:text-5xl font-serif-luxury font-normal text-[#231E1B] tracking-tight mb-4">
-                Curated Stays &amp; Architectural Escapes
+            <h2 class="text-3xl sm:text-4xl lg:text-5xl font-serif-luxury font-normal text-[#231E1B] tracking-tight leading-tight max-w-2xl">
+                Transforming brand visions into powerful visual narratives.
             </h2>
-            <p class="text-base sm:text-lg text-[#70645D] font-light leading-relaxed">
-                Through April\'s discerning aesthetic lens, experience authentic luxury stays, private pool villas, and five-star master suites brought to life through cinematic short-form storytelling.
-            </p>
         </div>
 
-        <!-- Controls: Category Pills & Search -->
-        <div class="flex flex-col md:flex-row items-center justify-between gap-5 mb-12 pb-6 border-b border-[#E8DCCF]/60">
+        <!-- 3D COVERFLOW STAGE -->
+        <div 
+            class="relative w-full max-w-6xl mx-auto h-[480px] sm:h-[540px] md:h-[580px] flex items-center justify-center my-4 overflow-visible"
+            @touchstart="handleTouchStart($event)"
+            @touchend="handleTouchEnd($event)"
+        >
             
-            <!-- Category Filters -->
-            <div class="flex flex-wrap items-center justify-center md:justify-start gap-2 sm:gap-3 w-full md:w-auto">
-                <template x-for="(label, key) in categories" :key="key">
-                    <button 
-                        @click="activeCategory = key"
-                        :class="activeCategory === key ? \'bg-[#231E1B] text-[#FAF6F0] shadow-md shadow-[#231E1B]/15 scale-[1.02]\' : \'bg-[#FDF8F6] text-[#70645D] hover:bg-[#F8EDE8] hover:text-[#231E1B] border border-[#E8DCCF]/70\'"
-                        class="px-5 py-2.5 rounded-full text-xs sm:text-sm tracking-wide transition-all duration-300 font-medium cursor-pointer"
-                        x-text="label"
-                    ></button>
-                </template>
-            </div>
-
-            <!-- Live Search -->
-            <div class="relative w-full md:w-72">
-                <input 
-                    type="text" 
-                    x-model="search"
-                    placeholder="Search stays, location, style..." 
-                    class="w-full bg-[#FCFAF7] border border-[#E8DCCF] rounded-full py-2.5 pl-10 pr-4 text-xs sm:text-sm text-[#231E1B] placeholder-[#9C8F87] focus:outline-none focus:border-[#B38F60] focus:ring-1 focus:ring-[#B38F60] transition"
-                >
-                <svg class="w-4 h-4 text-[#9C8F87] absolute left-3.5 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            <!-- Navigation Arrow Left -->
+            <button 
+                @click="prev()"
+                class="absolute left-2 sm:left-12 lg:left-24 z-40 w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-white/90 hover:bg-white text-[#231E1B] shadow-xl border border-[#E8DCCF]/80 flex items-center justify-center hover:scale-105 active:scale-95 transition-all duration-300 cursor-pointer"
+                aria-label="Previous Stay"
+            >
+                <svg class="w-5 h-5 text-[#231E1B]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
                 </svg>
-                <button x-show="search" @click="search = \'\'" class="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs text-[#9C8F87] hover:text-[#231E1B]">✕</button>
-            </div>
-        </div>
+            </button>
 
-        <!-- Cards Grid -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" x-show="filteredStays.length > 0">
-            <template x-for="stay in filteredStays" :key="stay.id">
-                <div class="group bg-white rounded-2xl overflow-hidden border border-[#E8DCCF]/70 shadow-sm hover:shadow-xl hover:-translate-y-1.5 transition-all duration-500 flex flex-col justify-between">
-                    
-                    <!-- Image Container -->
-                    <div class="relative aspect-[4/3] overflow-hidden bg-[#F3ECE1]">
+            <!-- Navigation Arrow Right -->
+            <button 
+                @click="next()"
+                class="absolute right-2 sm:right-12 lg:right-24 z-40 w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-white/90 hover:bg-white text-[#231E1B] shadow-xl border border-[#E8DCCF]/80 flex items-center justify-center hover:scale-105 active:scale-95 transition-all duration-300 cursor-pointer"
+                aria-label="Next Stay"
+            >
+                <svg class="w-5 h-5 text-[#231E1B]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                </svg>
+            </button>
+
+            <!-- Cards Container -->
+            <div class="relative w-full h-full flex items-center justify-center">
+                <template x-for="(stay, index) in filteredStays" :key="stay.id">
+                    <div 
+                        class="absolute w-[240px] sm:w-[280px] md:w-[320px] aspect-[9/16] rounded-3xl overflow-hidden shadow-2xl transition-all duration-500 ease-out cursor-pointer group bg-[#181412] border border-white/15"
+                        :style="getCardTransform(index)"
+                        @click="getRelativeDiff(index) === 0 ? selectedStay = stay : goTo(index)"
+                    >
+                        <!-- Background Image -->
                         <img 
                             :src="\'.\' + stay.image" 
                             :alt="stay.title" 
                             class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
                             loading="lazy"
                         >
-                        <!-- Top Badges Overlay -->
-                        <div class="absolute inset-x-3 top-3 flex items-center justify-between pointer-events-none">
-                            <span class="text-[11px] font-medium tracking-wider uppercase px-3 py-1 rounded-full bg-[#FAF6F0]/90 backdrop-blur-md text-[#231E1B] border border-white/60 shadow-xs" x-text="stay.category_label"></span>
-                            <span class="text-[11px] font-semibold px-2.5 py-1 rounded-full bg-[#231E1B]/80 backdrop-blur-md text-[#FAF6F0] flex items-center gap-1 shadow-xs">
-                                <span>★</span> <span x-text="stay.rating"></span>
-                            </span>
+
+                        <!-- Top Counter Badge (e.g. 01 / 06) -->
+                        <div class="absolute top-4 right-4 z-20 pointer-events-none">
+                            <span 
+                                class="px-3 py-1 rounded-full bg-black/40 backdrop-blur-md border border-white/20 text-white font-mono text-[11px] tracking-widest uppercase shadow-md"
+                                x-text="String(index + 1).padStart(2, \'0\') + \' / \' + String(filteredStays.length).padStart(2, \'0\')"
+                            ></span>
                         </div>
 
-                        <!-- Views Counter Badge -->
-                        <div class="absolute bottom-3 left-3 pointer-events-none">
-                            <span class="text-[10px] tracking-wider px-2.5 py-0.5 rounded-full bg-black/60 backdrop-blur-md text-white font-light flex items-center gap-1">
-                                <svg class="w-3 h-3 text-[#E6C5BA]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
-                                <span x-text="stay.views_count"></span>
-                            </span>
-                        </div>
-                    </div>
+                        <!-- Bottom Scrim Gradient Overlay -->
+                        <div class="absolute inset-0 bg-gradient-to-t from-[#181412]/95 via-[#181412]/40 to-transparent pointer-events-none"></div>
 
-                    <!-- Content Details -->
-                    <div class="p-6 flex-1 flex flex-col justify-between bg-white">
-                        <div>
-                            <!-- Location -->
-                            <div class="flex items-center gap-1.5 text-xs text-[#B38F60] font-medium mb-2">
-                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                                </svg>
-                                <span x-text="stay.location"></span>
+                        <!-- Card Content Details -->
+                        <div class="absolute inset-x-0 bottom-0 p-5 sm:p-6 z-20 text-white flex flex-col justify-end">
+                            <div class="space-y-1">
+                                <!-- Category / Type -->
+                                <p class="text-[11px] font-semibold tracking-widest uppercase text-[#E6C5BA]" x-text="stay.category_label || \'REELS\'"></p>
+                                
+                                <!-- Title -->
+                                <h3 class="text-lg sm:text-xl font-serif-luxury font-medium leading-snug group-hover:text-[#FAF6F0] transition text-white" x-text="stay.title"></h3>
+                                
+                                <!-- Tagline / Subtitle -->
+                                <p class="text-xs text-white/80 font-light italic line-clamp-1" x-text="stay.subtitle"></p>
                             </div>
 
-                            <!-- Title -->
-                            <h3 class="text-xl font-serif-luxury font-medium text-[#231E1B] mb-1.5 group-hover:text-[#B38F60] transition-colors line-clamp-1" x-text="stay.title"></h3>
-                            <p class="text-xs text-[#9C8F87] font-light mb-4 italic line-clamp-1" x-text="stay.subtitle"></p>
-
-                            <!-- Highlights Tags -->
-                            <div class="flex flex-wrap gap-1.5 mb-5">
-                                <template x-for="tag in (stay.highlights || []).slice(0, 3)" :key="tag">
-                                    <span class="text-[11px] px-2.5 py-0.5 rounded-md bg-[#FAF6F0] text-[#70645D] border border-[#E8DCCF]/60" x-text="\'#\' + tag"></span>
-                                </template>
+                            <!-- Read Review Trigger Hint (on Center Active Card) -->
+                            <div 
+                                class="mt-3 pt-3 border-t border-white/15 flex items-center justify-between text-[11px] text-[#FAF6F0]/90 font-medium"
+                                x-show="getRelativeDiff(index) === 0"
+                            >
+                                <span>Explore Details</span>
+                                <span class="text-xs">➔</span>
                             </div>
                         </div>
-
-                        <!-- Action Button -->
-                        <div class="pt-4 border-t border-[#F3ECE1] flex items-center justify-between">
-                            <button 
-                                @click="selectedStay = stay"
-                                class="inline-flex items-center gap-1.5 text-xs font-semibold tracking-wider text-[#231E1B] hover:text-[#B38F60] transition cursor-pointer"
-                            >
-                                <span>Read Review</span>
-                                <svg class="w-3.5 h-3.5 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                                </svg>
-                            </button>
-
-                            <a 
-                                :href="stay.instagram_url" 
-                                target="_blank" 
-                                class="text-xs text-[#9C8F87] hover:text-[#B38F60] flex items-center gap-1 transition"
-                                title="View on Instagram"
-                            >
-                                <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
-                                    <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
-                                </svg>
-                                <span>Reel</span>
-                            </a>
-                        </div>
                     </div>
-                </div>
-            </template>
+                </template>
+            </div>
+
         </div>
 
-        <div class="text-center py-16 bg-white/60 rounded-2xl border border-[#E8DCCF] max-w-md mx-auto" x-show="filteredStays.length === 0">
-            <p class="text-[#70645D] text-sm">No stays found matching your search criteria.</p>
-            <button @click="activeCategory = \'all\'; search = \'\'" class="mt-4 text-xs font-semibold text-[#B38F60] underline">
-                Reset all filters
-            </button>
+        <!-- CAROUSEL COUNTER (e.g. 1 OF 6 ·) -->
+        <div class="text-center mt-6 mb-8">
+            <p 
+                class="text-xs font-mono tracking-widest text-[#70645D] uppercase"
+                x-text="(filteredStays.length > 0 ? (activeIndex + 1) : 0) + \' OF \' + filteredStays.length + \' ·\'"
+            ></p>
+        </div>
+
+        <!-- BOTTOM CATEGORY FILTER PILLS (Matching Mockup) -->
+        <div class="flex flex-wrap items-center justify-center gap-2 sm:gap-3 max-w-4xl mx-auto pt-2 pb-6">
+            <template x-for="(label, key) in categories" :key="key">
+                <button 
+                    @click="activeCategory = key; activeIndex = 0;"
+                    :class="activeCategory === key ? \'bg-[#231E1B] text-[#FAF6F0] shadow-md shadow-[#231E1B]/20 scale-[1.03]\' : \'bg-white/80 hover:bg-[#F8EDE8] text-[#70645D] hover:text-[#231E1B] border border-[#E8DCCF]/80\'"
+                    class="px-5 sm:px-6 py-2.5 rounded-full text-xs font-semibold tracking-wider uppercase transition-all duration-300 cursor-pointer"
+                    x-text="label"
+                ></button>
+            </template>
         </div>
 
         <!-- Quick View Detail Modal -->
@@ -638,13 +663,13 @@ $html = '<!DOCTYPE html>
                 @keydown.escape.window="selectedStay = null"
             >
                 <div 
-                    class="bg-white rounded-3xl max-w-3xl w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-[#E8DCCF] relative"
+                    class="bg-white rounded-3xl max-w-3xl w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-[#E8DCCF] relative animate-fade-in"
                     @click.outside="selectedStay = null"
                 >
                     <!-- Close Button -->
                     <button 
                         @click="selectedStay = null" 
-                        class="absolute top-4 right-4 z-10 w-9 h-9 rounded-full bg-black/50 hover:bg-black text-white flex items-center justify-center text-sm transition cursor-pointer"
+                        class="absolute top-4 right-4 z-20 w-9 h-9 rounded-full bg-black/50 hover:bg-black text-white flex items-center justify-center text-sm transition cursor-pointer"
                     >
                         ✕
                     </button>
