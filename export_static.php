@@ -477,8 +477,11 @@ $html = '<!DOCTYPE html>
         x-data=\'{
             activeIndex: 0,
             selectedStay: null,
-            touchStartX: 0,
-            touchEndX: 0,
+            isDragging: false,
+            dragStartX: 0,
+            dragCurrentX: 0,
+            dragOffset: 0,
+            hasDragged: false,
             activeCategory: "all",
             stays: \' . $staysJson . \',
             categories: {
@@ -502,6 +505,33 @@ $html = '<!DOCTYPE html>
             goTo(index) {
                 this.activeIndex = index;
             },
+            startDrag(e) {
+                this.isDragging = true;
+                this.hasDragged = false;
+                this.dragStartX = e.clientX ?? (e.touches && e.touches[0] ? e.touches[0].clientX : 0);
+                this.dragCurrentX = this.dragStartX;
+                this.dragOffset = 0;
+            },
+            onDrag(e) {
+                if (!this.isDragging) return;
+                this.dragCurrentX = e.clientX ?? (e.touches && e.touches[0] ? e.touches[0].clientX : 0);
+                this.dragOffset = this.dragCurrentX - this.dragStartX;
+                if (Math.abs(this.dragOffset) > 8) {
+                    this.hasDragged = true;
+                }
+            },
+            endDrag() {
+                if (!this.isDragging) return;
+                this.isDragging = false;
+                const threshold = 45;
+                if (this.dragOffset < -threshold) {
+                    this.next();
+                } else if (this.dragOffset > threshold) {
+                    this.prev();
+                }
+                this.dragOffset = 0;
+                setTimeout(() => { this.hasDragged = false; }, 60);
+            },
             getCardTransform(index) {
                 const count = this.filteredStays.length;
                 if (count === 0) return "";
@@ -513,13 +543,15 @@ $html = '<!DOCTYPE html>
                     return "transform: translateX(" + (diff > 0 ? "160%" : "-160%") + ") scale(0.6); opacity: 0; pointer-events: none; z-index: 0;";
                 }
 
-                const translateX = diff * 74;
+                const liveShift = this.isDragging ? (this.dragOffset / 320) * 74 : 0;
+                const translateX = (diff * 74) + liveShift;
                 const scale = diff === 0 ? 1.05 : (Math.abs(diff) === 1 ? 0.88 : 0.72);
                 const opacity = diff === 0 ? 1 : (Math.abs(diff) === 1 ? 0.75 : 0.35);
                 const zIndex = 30 - Math.abs(diff) * 10;
                 const filter = diff === 0 ? "none" : "brightness(0.75) contrast(0.95)";
+                const transition = this.isDragging ? "transition: transform 0.05s ease-out;" : "transition: all 0.5s cubic-bezier(0.25, 1, 0.5, 1);";
 
-                return "transform: translateX(" + translateX + "%) scale(" + scale + "); opacity: " + opacity + "; z-index: " + zIndex + "; filter: " + filter + ";";
+                return "transform: translateX(" + translateX + "%) scale(" + scale + "); opacity: " + opacity + "; z-index: " + zIndex + "; filter: " + filter + "; " + transition;
             },
             getRelativeDiff(index) {
                 const count = this.filteredStays.length;
@@ -529,17 +561,19 @@ $html = '<!DOCTYPE html>
                 while (diff < -count / 2) diff += count;
                 return diff;
             },
-            handleTouchStart(e) {
-                this.touchStartX = e.changedTouches[0].screenX;
-            },
-            handleTouchEnd(e) {
-                this.touchEndX = e.changedTouches[0].screenX;
-                if (this.touchStartX - this.touchEndX > 40) this.next();
-                if (this.touchEndX - this.touchStartX > 40) this.prev();
+            handleCardClick(stay, index) {
+                if (this.hasDragged) return;
+                if (this.getRelativeDiff(index) === 0) {
+                    this.selectedStay = stay;
+                } else {
+                    this.goTo(index);
+                }
             }
         }\'
         @keydown.arrow-left.window="prev()"
         @keydown.arrow-right.window="next()"
+        @pointerup.window="endDrag()"
+        @pointercancel.window="endDrag()"
         x-init="$watch(\'activeCategory\', () => activeIndex = 0)"
     >
         <!-- Section Header (Matching Mockup) -->
@@ -552,16 +586,18 @@ $html = '<!DOCTYPE html>
             </h2>
         </div>
 
-        <!-- 3D COVERFLOW STAGE -->
+        <!-- 3D COVERFLOW STAGE (Draggable Container) -->
         <div 
-            class="relative w-full max-w-6xl mx-auto h-[480px] sm:h-[540px] md:h-[580px] flex items-center justify-center my-4 overflow-visible"
-            @touchstart="handleTouchStart($event)"
-            @touchend="handleTouchEnd($event)"
+            class="relative w-full max-w-6xl mx-auto h-[480px] sm:h-[540px] md:h-[580px] flex items-center justify-center my-4 overflow-visible touch-pan-y"
+            :class="isDragging ? \'cursor-grabbing\' : \'cursor-grab\'"
+            @pointerdown="startDrag($event)"
+            @pointermove="onDrag($event)"
+            @pointerup="endDrag()"
         >
             
             <!-- Navigation Arrow Left -->
             <button 
-                @click="prev()"
+                @click.stop="prev()"
                 class="absolute left-2 sm:left-12 lg:left-24 z-40 w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-white/90 hover:bg-white text-[#231E1B] shadow-xl border border-[#E8DCCF]/80 flex items-center justify-center hover:scale-105 active:scale-95 transition-all duration-300 cursor-pointer"
                 aria-label="Previous Stay"
             >
@@ -572,7 +608,7 @@ $html = '<!DOCTYPE html>
 
             <!-- Navigation Arrow Right -->
             <button 
-                @click="next()"
+                @click.stop="next()"
                 class="absolute right-2 sm:right-12 lg:right-24 z-40 w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-white/90 hover:bg-white text-[#231E1B] shadow-xl border border-[#E8DCCF]/80 flex items-center justify-center hover:scale-105 active:scale-95 transition-all duration-300 cursor-pointer"
                 aria-label="Next Stay"
             >
@@ -582,18 +618,19 @@ $html = '<!DOCTYPE html>
             </button>
 
             <!-- Cards Container -->
-            <div class="relative w-full h-full flex items-center justify-center">
+            <div class="relative w-full h-full flex items-center justify-center pointer-events-none">
                 <template x-for="(stay, index) in filteredStays" :key="stay.id">
                     <div 
-                        class="absolute w-[240px] sm:w-[280px] md:w-[320px] aspect-[9/16] rounded-3xl overflow-hidden shadow-2xl transition-all duration-500 ease-out cursor-pointer group bg-[#181412] border border-white/15"
+                        class="absolute w-[240px] sm:w-[280px] md:w-[320px] aspect-[9/16] rounded-3xl overflow-hidden shadow-2xl transition-all duration-500 ease-out group bg-[#181412] border border-white/15 pointer-events-auto select-none"
                         :style="getCardTransform(index)"
-                        @click="getRelativeDiff(index) === 0 ? selectedStay = stay : goTo(index)"
+                        @click="handleCardClick(stay, index)"
                     >
                         <!-- Background Image -->
                         <img 
-                            :src="\'.\' + stay.image" 
+                            :src="\'.\' + (stay.image.startsWith(\'/\') ? stay.image : \'/\' + stay.image)" 
                             :alt="stay.title" 
-                            class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
+                            draggable="false"
+                            class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out pointer-events-none select-none"
                             loading="lazy"
                         >
 
@@ -677,7 +714,7 @@ $html = '<!DOCTYPE html>
                     <!-- Modal Image Gallery -->
                     <div class="relative aspect-[16/9] w-full bg-[#F3ECE1]">
                         <img 
-                            :src="\'.\' + selectedStay.image" 
+                            :src="\'.\' + (selectedStay.image.startsWith(\'/\') ? selectedStay.image : \'/\' + selectedStay.image)" 
                             :alt="selectedStay.title" 
                             class="w-full h-full object-cover"
                         >
