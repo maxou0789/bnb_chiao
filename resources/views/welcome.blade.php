@@ -333,6 +333,78 @@
     </section>
 
 
+    <!-- INSTAGRAM LIVE FEED / CURATED VISUALS -->
+    <section class="bg-[#FAF6F0] py-16 px-4 sm:px-6 lg:px-8 border-y border-[#E8DCCF]">
+        <div class="max-w-7xl mx-auto">
+            
+            <div class="flex flex-col sm:flex-row items-center justify-between gap-4 mb-8">
+                <div>
+                    <span class="text-xs uppercase tracking-widest text-[#B38F60] font-semibold">Visual Journal</span>
+                    <h3 class="text-2xl sm:text-3xl font-serif-luxury font-medium text-[#231E1B]">
+                        Follow on Instagram @bnb_chiao
+                    </h3>
+                </div>
+                <a 
+                    href="https://www.instagram.com/bnb_chiao" 
+                    target="_blank" 
+                    class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-white border border-[#E8DCCF] text-xs font-semibold text-[#231E1B] hover:bg-[#FAF6F0] hover:border-[#B38F60] transition shadow-2xs"
+                >
+                    <span>View Profile on Instagram</span>
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+                </a>
+            </div>
+
+            <!-- 6-Photo Aesthetic Grid from Canva Media -->
+            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
+                
+                <a href="https://www.instagram.com/bnb_chiao" target="_blank" class="group relative aspect-square rounded-2xl overflow-hidden bg-[#F3ECE1] shadow-2xs">
+                    <img src="{{ asset('images/stays/stay-2-luxury-pool.jpg') }}" alt="Pool Stay" class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
+                    <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition duration-300 flex items-center justify-center text-white text-xs font-medium">
+                        <span>#PoolVilla</span>
+                    </div>
+                </a>
+
+                <a href="https://www.instagram.com/bnb_chiao" target="_blank" class="group relative aspect-square rounded-2xl overflow-hidden bg-[#F3ECE1] shadow-2xs">
+                    <img src="{{ asset('images/stays/stay-4-ocean-balcony.jpg') }}" alt="Ocean View" class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
+                    <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition duration-300 flex items-center justify-center text-white text-xs font-medium">
+                        <span>#OceanSuite</span>
+                    </div>
+                </a>
+
+                <a href="https://www.instagram.com/bnb_chiao" target="_blank" class="group relative aspect-square rounded-2xl overflow-hidden bg-[#F3ECE1] shadow-2xs">
+                    <img src="{{ asset('images/stays/stay-3-aesthetic-bedroom.jpg') }}" alt="Aesthetic Bedroom" class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
+                    <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition duration-300 flex items-center justify-center text-white text-xs font-medium">
+                        <span>#QuietLuxury</span>
+                    </div>
+                </a>
+
+                <a href="https://www.instagram.com/bnb_chiao" target="_blank" class="group relative aspect-square rounded-2xl overflow-hidden bg-[#F3ECE1] shadow-2xs">
+                    <img src="{{ asset('images/stays/stay-1-hotel-interior.jpg') }}" alt="Hotel Suite" class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
+                    <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition duration-300 flex items-center justify-center text-white text-xs font-medium">
+                        <span>#HotelLiving</span>
+                    </div>
+                </a>
+
+                <a href="https://www.instagram.com/bnb_chiao" target="_blank" class="group relative aspect-square rounded-2xl overflow-hidden bg-[#F3ECE1] shadow-2xs">
+                    <img src="{{ asset('images/stays/stay-5-tropical-resort.jpg') }}" alt="Tropical Resort" class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
+                    <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition duration-300 flex items-center justify-center text-white text-xs font-medium">
+                        <span>#TropicalVibes</span>
+                    </div>
+                </a>
+
+                <a href="https://www.instagram.com/bnb_chiao" target="_blank" class="group relative aspect-square rounded-2xl overflow-hidden bg-[#F3ECE1] shadow-2xs">
+                    <img src="{{ asset('images/stays/stay-6-luxury-lounge.jpg') }}" alt="Luxury Lounge" class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
+                    <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition duration-300 flex items-center justify-center text-white text-xs font-medium">
+                        <span>#SkylineLounge</span>
+                    </div>
+                </a>
+
+            </div>
+
+        </div>
+    </section>
+
+
     <!-- PORTFOLIO / STAYS CATALOG (Interactive Livewire Component) -->
     <livewire:stay-catalog />
 
@@ -578,78 +650,6 @@
 
         </div>
 
-    </section>
-
-
-    <!-- INSTAGRAM LIVE FEED / CURATED VISUALS -->
-    <section class="bg-[#FAF6F0] py-16 px-4 sm:px-6 lg:px-8 border-t border-[#E8DCCF]">
-        <div class="max-w-7xl mx-auto">
-            
-            <div class="flex flex-col sm:flex-row items-center justify-between gap-4 mb-8">
-                <div>
-                    <span class="text-xs uppercase tracking-widest text-[#B38F60] font-semibold">Visual Journal</span>
-                    <h3 class="text-2xl sm:text-3xl font-serif-luxury font-medium text-[#231E1B]">
-                        Follow on Instagram @bnb_chiao
-                    </h3>
-                </div>
-                <a 
-                    href="https://www.instagram.com/bnb_chiao" 
-                    target="_blank" 
-                    class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-white border border-[#E8DCCF] text-xs font-semibold text-[#231E1B] hover:bg-[#FAF6F0] hover:border-[#B38F60] transition shadow-2xs"
-                >
-                    <span>View Profile on Instagram</span>
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
-                </a>
-            </div>
-
-            <!-- 6-Photo Aesthetic Grid from Canva Media -->
-            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
-                
-                <a href="https://www.instagram.com/bnb_chiao" target="_blank" class="group relative aspect-square rounded-2xl overflow-hidden bg-[#F3ECE1] shadow-2xs">
-                    <img src="{{ asset('images/stays/stay-2-luxury-pool.jpg') }}" alt="Pool Stay" class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
-                    <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition duration-300 flex items-center justify-center text-white text-xs font-medium">
-                        <span>#PoolVilla</span>
-                    </div>
-                </a>
-
-                <a href="https://www.instagram.com/bnb_chiao" target="_blank" class="group relative aspect-square rounded-2xl overflow-hidden bg-[#F3ECE1] shadow-2xs">
-                    <img src="{{ asset('images/stays/stay-4-ocean-balcony.jpg') }}" alt="Ocean View" class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
-                    <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition duration-300 flex items-center justify-center text-white text-xs font-medium">
-                        <span>#OceanSuite</span>
-                    </div>
-                </a>
-
-                <a href="https://www.instagram.com/bnb_chiao" target="_blank" class="group relative aspect-square rounded-2xl overflow-hidden bg-[#F3ECE1] shadow-2xs">
-                    <img src="{{ asset('images/stays/stay-3-aesthetic-bedroom.jpg') }}" alt="Aesthetic Bedroom" class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
-                    <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition duration-300 flex items-center justify-center text-white text-xs font-medium">
-                        <span>#QuietLuxury</span>
-                    </div>
-                </a>
-
-                <a href="https://www.instagram.com/bnb_chiao" target="_blank" class="group relative aspect-square rounded-2xl overflow-hidden bg-[#F3ECE1] shadow-2xs">
-                    <img src="{{ asset('images/stays/stay-1-hotel-interior.jpg') }}" alt="Hotel Suite" class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
-                    <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition duration-300 flex items-center justify-center text-white text-xs font-medium">
-                        <span>#HotelLiving</span>
-                    </div>
-                </a>
-
-                <a href="https://www.instagram.com/bnb_chiao" target="_blank" class="group relative aspect-square rounded-2xl overflow-hidden bg-[#F3ECE1] shadow-2xs">
-                    <img src="{{ asset('images/stays/stay-5-tropical-resort.jpg') }}" alt="Tropical Resort" class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
-                    <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition duration-300 flex items-center justify-center text-white text-xs font-medium">
-                        <span>#TropicalVibes</span>
-                    </div>
-                </a>
-
-                <a href="https://www.instagram.com/bnb_chiao" target="_blank" class="group relative aspect-square rounded-2xl overflow-hidden bg-[#F3ECE1] shadow-2xs">
-                    <img src="{{ asset('images/stays/stay-6-luxury-lounge.jpg') }}" alt="Luxury Lounge" class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
-                    <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition duration-300 flex items-center justify-center text-white text-xs font-medium">
-                        <span>#SkylineLounge</span>
-                    </div>
-                </a>
-
-            </div>
-
-        </div>
     </section>
 
 
